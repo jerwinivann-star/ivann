@@ -19,6 +19,10 @@
   outline: none; box-shadow: 0 0 10px #22d3ee;
 }
 .contact-form button { margin-top: 16px; cursor: pointer; }
+.err { color: #f472b6; font-size: 0.85rem; min-height: 1em; }
+.ok { color: #4ade80; text-align: center; margin-top: 12px; }
+.info p { margin: 8px 0; }
+.info hr { border: none; border-top: 1px solid rgba(34,211,238,0.3); }
 </style>
 </head>
 <body>
@@ -43,18 +47,46 @@
 <section class="card">
 <h2>Contact Me</h2>
 <p class="lead">Have a question or want to say hi? Send me a message below!</p>
-<form class="contact-form" action="mailto:youremail@example.com" method="post" enctype="text/plain">
+<form class="contact-form" id="msgForm" novalidate>
 <label for="name">Name</label>
-<input type="text" id="name" name="name" required>
+<input type="text" id="name" placeholder="Your Name">
+<span class="err" id="nameErr"></span>
 <label for="email">Email</label>
-<input type="email" id="email" name="email" required>
+<input type="email" id="email" placeholder="Your Email">
+<span class="err" id="emailErr"></span>
 <label for="message">Message</label>
-<textarea id="message" name="message" rows="5" required></textarea>
-<div class="center"><button type="submit" class="btn">Send</button></div>
+<textarea id="message" rows="5" placeholder="Your Message"></textarea>
+<span class="err" id="msgErr"></span>
+<div class="center"><button type="submit" class="btn">Send Message</button></div>
+<span class="ok" id="okMsg" role="status"></span>
 </form>
+</section>
+<section class="card info">
+<h2>Contact Info</h2>
+<p><strong>Email</strong><br>venturaivan@gmail.com</p><hr>
+<p><strong>Phone</strong><br>0981 2957 815</p><hr>
+<p><strong>Address</strong><br>Magsaysay, Culasi, Antique</p>
 </section>
 </main>
 <footer><p>&copy; 2026 Jerwin Ivann Ventura. All rights reserved.</p></footer>
 <script src="script.js"></script>
+<script>
+document.getElementById('msgForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var n = document.getElementById('name').value.trim();
+  var m = document.getElementById('email').value.trim();
+  var t = document.getElementById('message').value.trim();
+  var ok = true;
+  document.getElementById('nameErr').textContent = n ? '' : 'Please enter your name.';
+  document.getElementById('emailErr').textContent = /^\S+@\S+\.\S+$/.test(m) ? '' : 'Please enter a valid email.';
+  document.getElementById('msgErr').textContent = t ? '' : 'Please enter a message.';
+  if (!n || !/^\S+@\S+\.\S+$/.test(m) || !t) ok = false;
+  if (!ok) return;
+  var body = 'Name: ' + n + '\nEmail: ' + m + '\n\n' + t;
+  window.location.href = 'mailto:venturaivan@gmail.com?subject=' +
+    encodeURIComponent('Message from ' + n) + '&body=' + encodeURIComponent(body);
+  document.getElementById('okMsg').textContent = 'Opening your email app...';
+});
+</script>
 </body>
 </html>
