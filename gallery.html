@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header"><h1>My Personal Website</h1></header>
+<nav class="navbar">
+<ul class="nav-list">
+<li><a href="index.html" class="nav-link">Home</a></li>
+<li class="dropdown">
+<button type="button" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">About <span class="caret">&#9660;</span></button>
+<ul class="dropdown-menu">
+<li><a href="skills.html">Skills I'm Developing</a></li>
+<li><a href="goals.html">My Goals as a Student</a></li>
+<li><a href="funfacts.html">Fun Facts About Me</a></li>
+</ul>
+</li>
+<li><a href="gallery.html" class="nav-link">Gallery</a></li>
+<li><a href="contact.html" class="nav-link">Contact</a></li>
+<li><a href="#" class="nav-link logout" data-logout>Log Out</a></li>
+</ul>
+</nav>
+<main>
+<section class="card" id="gallery">
+<h1>Gallery</h1>
+<p class="lead">Check out some of the images from my recent photography. Click an image to enlarge it.</p>
+<div class="gallery">
+<div class="gallery-item"><img src="images/1.jpeg" alt="Hiking on a grassy mountain" class="thumbnail"><p class="image-description">Enjoying the beauty and peace with nature</p></div>
+<div class="gallery-item"><img src="images/2.jpg" alt="Graduation recognition" class="thumbnail"><p class="image-description">A precious moment with Nanay</p></div>
+<div class="gallery-item"><img src="images/3.jpeg" alt="Misty mountain view" class="thumbnail"><p class="image-description">Misty mountain view that took my breath away</p></div>
+<div class="gallery-item"><img src="images/4.jpeg" alt="Group on stage" class="thumbnail"><p class="image-description">A memorable graduation with our three amazing advisers. </p></div>
+<div class="gallery-item"><img src="images/5.jpeg" alt="Graduation day" class="thumbnail"><p class="image-description">A special moment with my favorite advisers on graduation day</p></div>
+<div class="gallery-item"><img src="images/6.jpeg" alt="Classmates at school" class="thumbnail"><p class="image-description">A memorable moment with my Senior highschool classmates, the Hindsight Brothers.</p></div>
+</div>
+</section>
+</main>
+<footer><p>&copy; 2026 Jerwin Ivann Ventura. All rights reserved.</p></footer>
+<script src="script.js"></script>
+
+<script>
+(function () {
+  var old = document.getElementById('lightbox');
+  if (old) old.remove();
+
+  var css = document.createElement('style');
+  css.textContent = `
+    .lbx { display:none; position:fixed; left:0; top:0; right:0; bottom:0;
+      z-index:99999; background:#04061c;
+      flex-direction:column; align-items:center; justify-content:center;
+      padding:16px; overflow:hidden; }
+    .lbx.open { display:flex; }
+    .lbx-stage { position:relative; box-sizing:content-box;
+      overflow:hidden; border:2px solid #00f0ff;
+      box-shadow:0 0 22px rgba(0,240,255,.6);
+      touch-action:none; background:#04061c; }
+    .lbx-img { position:absolute; left:0; top:0; width:100%; height:100%;
+      background-repeat:no-repeat; background-position:center;
+      background-size:100% 100%; }
+    .lbx-cap { margin:18px 0 6px; text-align:center; color:#fff;
+      font-size:.95rem; max-width:900px; }
+    .lbx-count { margin:0; color:#9fdcff; font-size:.8rem; }
+    .lbx-btn { position:absolute; z-index:5; width:44px; height:44px;
+      border-radius:50%; border:none; color:#fff; font-size:22px; line-height:1;
+      background:#0a3a4a; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; }
+    .lbx-close { top:16px; right:16px; }
+    .lbx-prev { left:6px; top:50%; margin-top:-22px; }
+    .lbx-next { right:6px; top:50%; margin-top:-22px; }
+  `;
+  document.head.appendChild(css);
+
+  var box = document.createElement('div');
+  box.className = 'lbx';
+  box.innerHTML =
+    '<button class="lbx-btn lbx-close" aria-label="Close">&#10005;</button>' +
+    '<button class="lbx-btn lbx-prev" aria-label="Previous">&#10094;</button>' +
+    '<div class="lbx-stage"><div class="lbx-img"></div></div>' +
+    '<button class="lbx-btn lbx-next" aria-label="Next">&#10095;</button>' +
+    '<p class="lbx-cap"></p><p class="lbx-count"></p>';
+  document.body.appendChild(box);
+
+  var stage = box.querySelector('.lbx-stage');
+  var pic = box.querySelector('.lbx-img');
+  var cap = box.querySelector('.lbx-cap');
+  var count = box.querySelector('.lbx-count');
+
+  var items = Array.prototype.slice.call(document.querySelectorAll('.gallery-item'));
+  var current = 0;
+  var cache = {};
+  var token = 0;
+  var dims = { w: 4, h: 3 };
+
+  var scale = 1, x = 0, y = 0;
+  var startDist = 0, startScale = 1, lastX = 0, lastY = 0;
+  var moved = false, swipeX = 0;
+
+  // Sukatin ang frame ayon sa sukat ng picture
+  function fit(w, h) {
+    dims = { w: w, h: h };
+    var maxW = Math.min(900, window.innerWidth - 40) - 4;
+    var maxH = window.innerHeight * 0.68;
+    var r = Math.min(maxW / w, maxH / h);
+    stage.style.width = Math.round(w * r) + 'px';
+    stage.style.height = Math.round(h * r) + 'px';
+  }
+  window.addEventListener('resize', function () { fit(dims.w, dims.h); });
+
+  function apply() {
+    pic.style.transform = (scale === 1 && x === 0 && y === 0)
+      ? 'none'
+      : 'translate(' + x + 'px,' + y + 'px) scale(' + scale + ')';
+  }
+  function resetZoom() { scale = 1; x = 0; y = 0; apply(); }
+
+  // I-load ang picture at paliitin sa max 1600px
+  function prepare(i, cb) {
+    if (cache[i]) { cb(cache[i]); return; }
+    var thumb = items[i].querySelector('img');
+    var url = thumb.currentSrc || thumb.src;
+    var t = new Image();
+    t.onload = function () {
+      var w = t.naturalWidth, h = t.naturalHeight;
+      var r = Math.min(1, 1600 / Math.max(w, h));
+      var out = url, ow = w, oh = h;
+      try {
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * r);
+        c.height = Math.round(h * r);
+        c.getContext('2d').drawImage(t, 0, 0, c.width, c.height);
+        out = c.toDataURL('image/jpeg', 0.85);
+        ow = c.width; oh = c.height;
+      } catch (e) {}
+      cache[i] = { src: out, w: ow, h: oh };
+      cb(cache[i]);
+    };
+    t.onerror = function () { cb({ src: null, w: 4, h: 3 }); };
+    t.src = url;
+  }
+
+  function render() {
+    var item = items[current];
+    var desc = item.querySelector('.image-description');
+    var my = ++token;
+    cap.textContent = desc ? desc.textContent : '';
+    count.textContent = (current + 1) + ' of ' + items.length;
+    pic.style.backgroundImage = 'none';
+    resetZoom();
+    prepare(current, function (res) {
+      if (my !== token) return;
+      if (res.src) {
+        fit(res.w, res.h);
+        pic.style.backgroundImage = 'url("' + res.src + '")';
+      } else {
+        cap.textContent = 'Hindi ma-load ang picture.';
+      }
+    });
+  }
+  function openAt(i) { current = i; fit(dims.w, dims.h); box.classList.add('open'); render(); }
+  function close() { box.classList.remove('open'); }
+  function show(step) { current = (current + step + items.length) % items.length; render(); }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('.gallery-item img') : null;
+    if (!t) return;
+    var i = items.indexOf(t.closest('.gallery-item'));
+    if (i < 0) return;
+    e.stopPropagation();
+    openAt(i);
+  }, true);
+
+  box.querySelector('.lbx-close').onclick = close;
+  box.querySelector('.lbx-prev').onclick = function () { show(-1); };
+  box.querySelector('.lbx-next').onclick = function () { show(1); };
+
+  pic.addEventListener('click', function () {
+    if (moved) { moved = false; return; }
+    if (scale === 1) { scale = 2.5; apply(); } else { resetZoom(); }
+  });
+
+  function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+
+  stage.addEventListener('touchstart', function (e) {
+    moved = false;
+    if (e.touches.length === 2) {
+      startDist = dist(e.touches); startScale = scale;
+    } else {
+      lastX = swipeX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  stage.addEventListener('touchmove', function (e) {
+    e.preventDefault();
+    if (e.touches.length === 2) {
+      scale = Math.min(5, Math.max(1, startScale * dist(e.touches) / startDist));
+      moved = true;
+    } else if (scale > 1) {
+      var t = e.touches[0];
+      x += t.clientX - lastX; y += t.clientY - lastY;
+      lastX = t.clientX; lastY = t.clientY;
+      moved = true;
+    }
+    apply();
+  }, { passive: false });
+
+  stage.addEventListener('touchend', function (e) {
+    if (scale <= 1.01) resetZoom();
+    if (scale === 1 && e.changedTouches.length === 1) {
+      var dx = e.changedTouches[0].clientX - swipeX;
+      if (Math.abs(dx) > 60) { moved = true; show(dx < 0 ? 1 : -1); }
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!box.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') show(-1);
+    if (e.key === 'ArrowRight') show(1);
+  });
+})();
+</script>
+</body>
+</html>

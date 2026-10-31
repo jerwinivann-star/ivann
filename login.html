@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login &amp; Sign Up - NEX3D</title>
+<link rel="stylesheet" href="login_style.css">
+</head>
+<body>
+<div class="form-container">
+<div class="mini-scene" aria-hidden="true"><div class="mini-cube"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+<h2 id="formTitle">Login</h2>
+<form id="authForm">
+<label for="username">Username</label>
+<input type="text" id="username" autocomplete="username" required>
+<label for="password">Password</label>
+<input type="password" id="password" autocomplete="current-password" required>
+<div class="show-password" id="showPasswordContainer">
+<input type="checkbox" id="showPassword">
+<label for="showPassword">Show Password</label>
+</div>
+<label for="confirmPassword" id="confirmPasswordLabel" style="display:none;">Confirm Password</label>
+<input type="password" id="confirmPassword" autocomplete="new-password" style="display:none;">
+<p id="passwordMatchMessage" style="display:none;"></p>
+<button type="submit" id="submitBtn">Login</button>
+<p id="errorMessage"></p>
+<p id="toggleText">Don't have an account? <a href="#" id="toggleLink">Sign Up</a></p>
+</form>
+</div>
+<footer class="login-footer"><p>&copy; 2026 Jerwin Ivann Ventura. All rights reserved.</p></footer>
+<script>
+var isLogin = true;
+var $ = function (id) { return document.getElementById(id); };
+
+function toggleForm() {
+  $('authForm').reset();
+  $('password').type = 'password';
+  $('errorMessage').textContent = '';
+  $('passwordMatchMessage').style.display = 'none';
+  isLogin = !isLogin;
+  $('formTitle').textContent = isLogin ? 'Login' : 'Sign Up';
+  $('submitBtn').textContent = isLogin ? 'Login' : 'Sign Up';
+  $('confirmPassword').style.display = isLogin ? 'none' : 'block';
+  $('confirmPasswordLabel').style.display = isLogin ? 'none' : 'block';
+  $('showPasswordContainer').style.display = isLogin ? 'flex' : 'none';
+  $('toggleText').innerHTML = isLogin
+    ? 'Don\'t have an account? <a href="#" id="toggleLink">Sign Up</a>'
+    : 'Already have an account? <a href="#" id="toggleLink">Login</a>';
+  $('toggleLink').addEventListener('click', onToggle);
+}
+function onToggle(e) { e.preventDefault(); toggleForm(); }
+
+function handleSubmit() {
+  var username = $('username').value.trim();
+  var password = $('password').value;
+  var error = $('errorMessage');
+  error.textContent = '';
+  if (username === '' || password === '') { error.textContent = 'Please fill out all fields'; return; }
+  if (isLogin) {
+    if (username === localStorage.getItem('username') && password === localStorage.getItem('password')) {
+      localStorage.setItem('isLoggedIn', 'true');
+      window.location.href = 'index.html';
+    } else {
+      error.textContent = 'Invalid username or password';
+    }
+  } else if (password !== $('confirmPassword').value) {
+    error.textContent = 'Passwords do not match';
+  } else {
+    localStorage.setItem('username', username);
+    localStorage.setItem('password', password);
+    alert('Account created successfully! You can now log in.');
+    toggleForm();
+  }
+}
+
+function checkPasswordMatch() {
+  var confirm = $('confirmPassword').value, msg = $('passwordMatchMessage');
+  if (isLogin || confirm === '') { msg.style.display = 'none'; return; }
+  var same = confirm === $('password').value;
+  msg.textContent = same ? 'Passwords match' : 'Passwords do not match';
+  msg.style.color = same ? '#39ff14' : '#ff6b9d';
+  msg.style.display = 'block';
+}
+
+$('authForm').addEventListener('submit', function (e) { e.preventDefault(); handleSubmit(); });
+$('toggleLink').addEventListener('click', onToggle);
+$('showPassword').addEventListener('change', function () { $('password').type = this.checked ? 'text' : 'password'; });
+$('confirmPassword').addEventListener('input', checkPasswordMatch);
+$('password').addEventListener('input', checkPasswordMatch);
+</script>
+</body>
+</html>
